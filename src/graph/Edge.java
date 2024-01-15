@@ -1,20 +1,27 @@
 package graph;
 
+import MeaT.PSTLeafNode;
+
 public class Edge {
     private Node start_node;
     private Node end_node;
     private byte[] id;
     private String timestamp;
     private String time_cost;
+    private String type;
     private String reputation; //相当于权重
+    private PSTLeafNode upper_PSFLeaf;//对应到property semantic trie中的leafnode
 
-    public Edge(Node start_node, Node end_node, byte[] id, String timestamp, String time_cost, String reputation) {
+
+
+    public Edge(Node start_node, Node end_node, byte[] id, String timestamp, String time_cost, String reputation,String type) {
         this.start_node = start_node;
         this.end_node = end_node;
         this.id = id;
         this.timestamp = timestamp;
         this.time_cost = time_cost;
         this.reputation = reputation;
+        this.type=type;
     }
 
     public Node getStart_node() {
@@ -63,6 +70,22 @@ public class Edge {
 
     public void setReputation(String reputation) {
         this.reputation = reputation;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public PSTLeafNode getUpper_PSFLeaf() {
+        return upper_PSFLeaf;
+    }
+
+    public void setUpper_PSFLeaf(PSTLeafNode upper_PSFLeaf) {
+        this.upper_PSFLeaf = upper_PSFLeaf;
     }
 }
 

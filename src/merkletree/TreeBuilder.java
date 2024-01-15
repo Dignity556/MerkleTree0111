@@ -46,6 +46,7 @@ public class TreeBuilder
 
     public void create_txs_blocks(ArrayList<Node> nodes){
         int block_id=1;
+        String[] types={"Electronic","Food","Furniture"};
         for (int i=0;i<5;i++)
         {
             String blockid=String.valueOf(block_id);
@@ -64,7 +65,8 @@ public class TreeBuilder
                 Node node1=nodes.get(firstNumber);
                 Node node2=nodes.get(secondNumber);
                 String tx_timestamp=String.valueOf(block_id);
-                Transaction tx=new Transaction(tx_id,tx_timestamp,tx_time_cost,tx_repu,node1,node2);
+                int type=ran.nextInt(3);
+                Transaction tx=new Transaction(tx_id,tx_timestamp,tx_time_cost,tx_repu,node1,node2,types[type]);
                 txs.add(tx);
                 System.out.println("TX:"+tx.getId());
                 b.getTxs().add(tx);

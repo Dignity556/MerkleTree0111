@@ -1,4 +1,4 @@
-package MeaT;
+package functions;
 
 import blockchain.Transaction;
 import functions.TxUtils;

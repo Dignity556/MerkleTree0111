@@ -1,5 +1,6 @@
 package blockchain;
 
+import MeaT.PSTLeafNode;
 import graph.Node;
 
 public class Transaction {
@@ -9,15 +10,17 @@ public class Transaction {
     private String reputation; //相当于权重
     private Node start_node;
     private Node end_node;
+    private String type;
+    private PSTLeafNode upper_PSFLeaf;//对应到property semantic trie中的leafnode
 
-
-    public Transaction(byte[] id, String timestamp, String time_cost, String reputation, Node start_node, Node end_node) {
+    public Transaction(byte[] id, String timestamp, String time_cost, String reputation, Node start_node, Node end_node, String type) {
         this.id = id;
         this.timestamp = timestamp;
         this.time_cost = time_cost;
         this.reputation = reputation;
         this.start_node = start_node;
         this.end_node = end_node;
+        this.type=type;
     }
 
     public void setId(byte[] id){
@@ -66,5 +69,21 @@ public class Transaction {
 
     public void setEnd_node(Node end_node) {
         this.end_node = end_node;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public PSTLeafNode getUpper_PSFLeaf() {
+        return upper_PSFLeaf;
+    }
+
+    public void setUpper_PSFLeaf(PSTLeafNode upper_PSFLeaf) {
+        this.upper_PSFLeaf = upper_PSFLeaf;
     }
 }
