@@ -1,14 +1,14 @@
 package merkletree;
 
-import static org.junit.Assert.*;
-
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.Before;
-import org.junit.Test;
+//import static org.junit.Assert.*;
+//
+//import java.security.MessageDigest;
+//import java.security.NoSuchAlgorithmException;
+//import java.util.ArrayList;
+//import java.util.List;
+//
+//import org.junit.Before;
+//import org.junit.Test;
 
 /**
  * JUnit tests for the MerkleTree class.
