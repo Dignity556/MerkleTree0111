@@ -3,94 +3,93 @@ package merkletree;
 import blockchain.Block;
 import blockchain.Transaction;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
-/**
- * Represents a Merkle Tree leaf, consisting of a list
- * of blocks of arbitrary data. The arbitrary data in each block
- * is represented as a byte array.
- */
+// Each transaction is transformed into a leaf of Merkle Tree;
+// The leaf is the SHA256 value of the transaction;
 public class Leaf
 {
-    // The data to be stored in this node
-    private final List<Transaction> transactions;
+//    private final List<Transaction> transactions;
+//    public Leaf(final List<Transaction> transactions)
+//    {
+//        this.transactions = transactions;
+//    }
+//    public List<Transaction> getTransactions()
+//    {
+//        return (transactions);
+//    }
 
-    /**
-     * Initialises the leaf node, which consists
-     * of the specified block of data.
-     *
-     * transactions Data block to be placed in the leaf node
-     */
-    public Leaf(final List<Transaction> transactions)
-    {
-        this.transactions = transactions;
+    private Transaction transaction;
+    private byte[] hash_id;
+    private Leaf father;
+    private Leaf left_son;
+    private Leaf right_son;
+
+
+    public Leaf(Transaction transaction) throws NoSuchAlgorithmException {
+        this.transaction=transaction;
+        hash_id=calculateSHA256(transaction.getId().toString());
     }
 
-    /**
-     * @return The data block associated with this leaf node
-     */
-    public List<Transaction> getTransactions()
-    {
-        return (transactions);
+    public Leaf(){
+
     }
 
-    /**
-     * Returns a string representation of the specified
-     * byte array, with the values represented in hex. The
-     * values are comma separated and enclosed within square
-     * brackets.
-     *
-     * @param array The byte array
-     *
-     * @return Bracketed string representation of hex values
-     */
-    private String toHexString(final byte[] array)
-    {
-        final StringBuilder str = new StringBuilder();
+    public static byte[] calculateSHA256(String input) throws NoSuchAlgorithmException {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        return digest.digest(input.getBytes(StandardCharsets.UTF_8));
+    }
 
-        str.append("[");
-
-        boolean isFirst = true;
-        for(int idx=0; idx<array.length; idx++)
-        {
-            final byte b = array[idx];
-
-            if (isFirst)
-            {
-                //str.append(Integer.toHexString(i));
-                isFirst = false;
-            }
-            else
-            {
-                //str.append("," + Integer.toHexString(i));
-                str.append(",");
-            }
-
-            final int hiVal = (b & 0xF0) >> 4;
-            final int loVal = b & 0x0F;
-            str.append((char) ('0' + (hiVal + (hiVal / 10 * 7))));
-            str.append((char) ('0' + (loVal + (loVal / 10 * 7))));
+    public static String bytesToHex(byte[] bytes) {
+        StringBuilder hexString = new StringBuilder();
+        for (byte b : bytes) {
+            String hex = String.format("%02x", b);
+            hexString.append(hex);
         }
-
-        str.append("]");
-
-        return(str.toString());
+        return hexString.toString();
     }
 
-    /**
-     * Returns a string representation of the data block
-     */
-    public String toString()
-    {
-        final StringBuilder str = new StringBuilder();
-
-        for(Transaction tx: transactions)
-        {
-            str.append(toHexString(tx.getId()));
-        }
-
-        return(str.toString());
+    public Leaf getFather() {
+        return father;
     }
 
+    public void setFather(Leaf father) {
+        this.father = father;
+    }
+
+    public Leaf getLeft_son() {
+        return left_son;
+    }
+
+    public void setLeft_son(Leaf left_son) {
+        this.left_son = left_son;
+    }
+
+    public Leaf getRight_son() {
+        return right_son;
+    }
+
+    public void setRight_son(Leaf right_son) {
+        this.right_son = right_son;
+    }
+
+    public Transaction getTransaction() {
+        return transaction;
+    }
+
+    public void setTransaction(Transaction transaction) {
+        this.transaction = transaction;
+    }
+
+    public byte[] getHash_id() {
+        return hash_id;
+    }
+
+    public void setHash_id(byte[] hash_id) {
+        this.hash_id = hash_id;
+    }
 }
 

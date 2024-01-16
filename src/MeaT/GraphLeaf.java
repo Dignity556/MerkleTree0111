@@ -1,93 +1,106 @@
 package MeaT;
 
+import blockchain.Block;
 import blockchain.Transaction;
 import graph.Edge;
+import graph.Node;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
-public class GraphLeaf {
-/**
- * Represents a Merkle Graph Tree leaf
- */
+// Each transaction is transformed into a leaf of Merkle Tree;
+// The leaf is the SHA256 value of the transaction;
+public class GraphLeaf
+{
+//    private final List<Transaction> transactions;
+//    public Leaf(final List<Transaction> transactions)
+//    {
+//        this.transactions = transactions;
+//    }
+//    public List<Transaction> getTransactions()
+//    {
+//        return (transactions);
+//    }
 
-    // The data to be stored in this node
-    private final List<Edge> edges;
+    private Edge edge;
+    private byte[] hash_id;
+    private GraphLeaf father;
+    private GraphLeaf left_son;
+    private GraphLeaf right_son;
+    private Node subtree_node;
 
-    /**
-     * Initialises the leaf node, which consists
-     * of the specified block of data.
-     *
-     * transactions Data block to be placed in the leaf node
-     */
-    public GraphLeaf(final List<Edge> edges)
-    {
-        this.edges = edges;
+
+    public GraphLeaf(Edge edge) throws NoSuchAlgorithmException {
+        this.edge=edge;
+        hash_id=calculateSHA256(edge.getId().toString());
     }
 
-    /**
-     * @return The data block associated with this leaf node
-     */
-    public List<Edge> getEdges()
-    {
-        return (edges);
+    public GraphLeaf(){
+
     }
 
-    /**
-     * Returns a string representation of the specified
-     * byte array, with the values represented in hex. The
-     * values are comma separated and enclosed within square
-     * brackets.
-     *
-     * @param array The byte array
-     *
-     * @return Bracketed string representation of hex values
-     */
-    private String toHexString(final byte[] array)
-    {
-        final StringBuilder str = new StringBuilder();
+    public static byte[] calculateSHA256(String input) throws NoSuchAlgorithmException {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        return digest.digest(input.getBytes(StandardCharsets.UTF_8));
+    }
 
-        str.append("[");
-
-        boolean isFirst = true;
-        for(int idx=0; idx<array.length; idx++)
-        {
-            final byte b = array[idx];
-
-            if (isFirst)
-            {
-                //str.append(Integer.toHexString(i));
-                isFirst = false;
-            }
-            else
-            {
-                //str.append("," + Integer.toHexString(i));
-                str.append(",");
-            }
-
-            final int hiVal = (b & 0xF0) >> 4;
-            final int loVal = b & 0x0F;
-            str.append((char) ('0' + (hiVal + (hiVal / 10 * 7))));
-            str.append((char) ('0' + (loVal + (loVal / 10 * 7))));
+    public static String bytesToHex(byte[] bytes) {
+        StringBuilder hexString = new StringBuilder();
+        for (byte b : bytes) {
+            String hex = String.format("%02x", b);
+            hexString.append(hex);
         }
-
-        str.append("]");
-
-        return(str.toString());
+        return hexString.toString();
     }
 
-    /**
-     * Returns a string representation of the data block
-     */
-    public String toString()
-    {
-        final StringBuilder str = new StringBuilder();
-
-        for(Edge edge: edges)
-        {
-            str.append(toHexString(edge.getId()));
-        }
-        return(str.toString());
+    public GraphLeaf getFather() {
+        return father;
     }
 
+    public void setFather(GraphLeaf father) {
+        this.father = father;
+    }
+
+    public GraphLeaf getLeft_son() {
+        return left_son;
+    }
+
+    public void setLeft_son(GraphLeaf left_son) {
+        this.left_son = left_son;
+    }
+
+    public GraphLeaf getRight_son() {
+        return right_son;
+    }
+
+    public void setRight_son(GraphLeaf right_son) {
+        this.right_son = right_son;
+    }
+
+    public Edge getEdge() {
+        return edge;
+    }
+
+    public void setEdge(Edge edge) {
+        this.edge = edge;
+    }
+
+    public byte[] getHash_id() {
+        return hash_id;
+    }
+
+    public void setHash_id(byte[] hash_id) {
+        this.hash_id = hash_id;
+    }
+
+    public Node getSubtree_node() {
+        return subtree_node;
+    }
+
+    public void setSubtree_node(Node subtree_node) {
+        this.subtree_node = subtree_node;
+    }
 }
 
