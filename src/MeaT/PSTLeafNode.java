@@ -3,13 +3,16 @@ package MeaT;
 import blockchain.Transaction;
 import graph.Edge;
 
+import java.util.ArrayList;
+
 public class PSTLeafNode {
     private Transaction tx;
     private Edge edge;
     private PSTBranchNodeItem preBranch;
+    private ArrayList<Transaction> txs;
 
     public PSTLeafNode(){
-
+        this.txs=new ArrayList<>();
     }
 
     public PSTBranchNodeItem getPreBranch() {
@@ -39,4 +42,11 @@ public class PSTLeafNode {
     public void setTX_PSTLeaf(){
         tx.setUpper_PSFLeaf(this);
     }
+
+    public void addTx(Transaction tx)
+    {
+        txs.add(tx);
+    }
+
+
 }

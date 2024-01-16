@@ -48,7 +48,7 @@ public class PSTBranchNode {
                 min=Double.valueOf(ts.getTime_cost());
             }
         }
-        for(int i=0;i<amount-1;i++)
+        for(int i=0;i<amount;i++)
         {
             PSTBranchNodeItem bnitem=new PSTBranchNodeItem();
             String range=String.valueOf((min+(i-1)*(max-min))/(amount-1))+","+String.valueOf((min+i*(max-min))/(amount-1));
@@ -76,7 +76,7 @@ public class PSTBranchNode {
                 min=Double.valueOf(ts.getReputation());
             }
         }
-        for(int i=0;i<amount-1;i++)
+        for(int i=0;i<amount;i++)
         {
             PSTBranchNodeItem bnitem=new PSTBranchNodeItem();
             String range=String.valueOf((min+(i-1)*(max-min))/(amount-1))+","+String.valueOf((min+i*(max-min))/(amount-1));

@@ -32,11 +32,46 @@ public class PropertySemanticTrie {
             branchitems1 = branch1.category_by_reputation(txs,amount);
         }
         branch1.leaf_or_branch(branchitems1);
-        //开始递归遍历
-
+        //开始递归创建
+        iterate_filter(branchitems1, 1, filter_order, amount);
     }
 
-    public void iterate_filter(HashMap<String,PSTBranchNodeItem> branchitems){
-
+    //递归创建时，需要带着每层筛选的属性集types和目前筛选到哪层的pre_type参数去递归
+    public void iterate_filter(HashMap<String,PSTBranchNodeItem> branchitems, int pre_type, String[] types, int amount){
+        for(String key: branchitems.keySet())
+        {
+            if(branchitems.get(key).getNext_leaf()!=null || pre_type==3)
+            {
+                branchitems.get(key).setNext_extension(null);
+                PSTLeafNode leafNode=new PSTLeafNode();
+                for (Transaction tx:branchitems.get(key).getPre_txs()){
+                    leafNode.addTx(tx);
+                }
+                branchitems.get(key).setNext_leaf(leafNode);
+                System.out.println("Leaf");
+                continue;
+            }else
+            {
+                PSTExtensionNode extensionNode=branchitems.get(key).getNext_extension();
+                extensionNode.setProperty(types[pre_type]);
+                extensionNode.setPre_item(branchitems.get(key));//没有previous的extension_node就是第一个
+                PSTBranchNode branch1=new PSTBranchNode();
+                extensionNode.set_next_branch(branch1);
+                branch1.setPrevous(extensionNode);
+                HashMap<String,PSTBranchNodeItem> branchitems1=new HashMap<>();
+                if(types[pre_type].equals("type"))
+                {
+                    branchitems1 = branch1.category_by_type(branchitems.get(key).getPre_txs());
+                }else if(types[pre_type].equals("time_cost"))
+                {
+                    branchitems1 = branch1.category_by_timecost(branchitems.get(key).getPre_txs(),amount);
+                }else{
+                    branchitems1 = branch1.category_by_reputation(branchitems.get(key).getPre_txs(),amount);
+                }
+                branch1.leaf_or_branch(branchitems1);
+                System.out.println(branchitems.get(key));
+                iterate_filter(branchitems1,pre_type+1,types,amount);
+            }
+        }
     }
 }
