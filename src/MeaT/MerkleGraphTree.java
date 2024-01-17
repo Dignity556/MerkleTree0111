@@ -306,4 +306,8 @@ public class MerkleGraphTree
         }
 
     }
+
+    public void query_MerkleTree(){
+
+    }
 }
