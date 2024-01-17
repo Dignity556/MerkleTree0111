@@ -10,7 +10,7 @@ import java.util.HashMap;
 
 public class MeaTUtils {
     //Filter the edges with the same start_node into the same merkle graph tree
-    public HashMap<Node,ArrayList<Edge>> start_node_filter(ArrayList<Transaction> txs){
+    public static HashMap<Node,ArrayList<Edge>> start_node_filter(ArrayList<Transaction> txs){
         TxUtils txu=new TxUtils();
         ArrayList<Edge> edges=new ArrayList<Edge>();
         //Transmit all the transactions into edges

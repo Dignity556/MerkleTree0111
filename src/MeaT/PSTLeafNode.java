@@ -4,15 +4,17 @@ import blockchain.Transaction;
 import graph.Edge;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class PSTLeafNode {
     private Transaction tx;
-    private Edge edge;
+    private ArrayList<Edge> edges;
     private PSTBranchNodeItem preBranch;
     private ArrayList<Transaction> txs;
 
     public PSTLeafNode(){
         this.txs=new ArrayList<>();
+        this.edges=new ArrayList<>();
     }
 
     public PSTBranchNodeItem getPreBranch() {
@@ -31,12 +33,12 @@ public class PSTLeafNode {
         this.tx = tx;
     }
 
-    public Edge getEdge() {
-        return edge;
+    public ArrayList<Edge> getEdges() {
+        return edges;
     }
 
-    public void setEdge(Edge edge) {
-        this.edge = edge;
+    public void setEdges(ArrayList<Edge> edges) {
+        this.edges = edges;
     }
 
     public void setTX_PSTLeaf(){
@@ -48,5 +50,11 @@ public class PSTLeafNode {
         txs.add(tx);
     }
 
+    public ArrayList<Transaction> getTxs() {
+        return txs;
+    }
 
+    public void setTxs(ArrayList<Transaction> txs) {
+        this.txs = txs;
+    }
 }

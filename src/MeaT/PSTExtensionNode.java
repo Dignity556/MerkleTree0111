@@ -2,6 +2,7 @@ package MeaT;
 
 public class PSTExtensionNode {
     private PSTBranchNodeItem pre_item;
+    private MerkleGraphTree root_item;
     private String property;
     private PSTBranchNode next_item;
 
@@ -39,4 +40,11 @@ public class PSTExtensionNode {
         bnodeItem.setNext_extension(this);
     }
 
+    public MerkleGraphTree getRoot_item() {
+        return root_item;
+    }
+
+    public void setRoot_item(MerkleGraphTree root_item) {
+        this.root_item = root_item;
+    }
 }

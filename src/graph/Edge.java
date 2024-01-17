@@ -1,7 +1,11 @@
 package graph;
 
+import MeaT.GraphNodeLinkItem;
+import MeaT.MerkleGraphTree;
 import MeaT.PSTLeafNode;
 import blockchain.Block;
+
+import java.util.HashMap;
 
 public class Edge {
     private Node start_node;
@@ -12,6 +16,7 @@ public class Edge {
     private String type;
     private String reputation; //相当于权重
     private Block block;
+    private HashMap<GraphNodeLinkItem, MerkleGraphTree> gnlItem; //每条边在graphnodelink的哪个数据项中
     private PSTLeafNode upper_PSFLeaf;//对应到property semantic trie中的leafnode
 
 
@@ -24,6 +29,7 @@ public class Edge {
         this.time_cost = time_cost;
         this.reputation = reputation;
         this.type=type;
+        this.gnlItem=new HashMap<>();
     }
 
     public Node getStart_node() {
@@ -96,6 +102,14 @@ public class Edge {
 
     public void setUpper_PSFLeaf(PSTLeafNode upper_PSFLeaf) {
         this.upper_PSFLeaf = upper_PSFLeaf;
+    }
+
+    public HashMap<GraphNodeLinkItem, MerkleGraphTree> getGnlItem() {
+        return gnlItem;
+    }
+
+    public void setGnlItem(HashMap<GraphNodeLinkItem, MerkleGraphTree> gnlItem) {
+        this.gnlItem = gnlItem;
     }
 }
 

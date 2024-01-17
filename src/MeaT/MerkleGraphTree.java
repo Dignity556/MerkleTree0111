@@ -267,11 +267,13 @@ public class MerkleGraphTree
         this.block = block;
     }
 
-    public MerkleGraphTree create_Merkletree(ArrayList<GraphLeaf> leaves) throws NoSuchAlgorithmException {
+    public static MerkleGraphTree create_Merkletree(ArrayList<GraphLeaf> leaves) throws NoSuchAlgorithmException {
         ArrayList<GraphLeaf> new_leaves=new ArrayList<>();
-        MerkleGraphTree mt=new MerkleGraphTree();
+
+        int count=0;//记录树的总个数
         if(leaves.size()==1)
         {
+            MerkleGraphTree mt=new MerkleGraphTree();
             leaves.get(0).setFather(null);
             mt.setRoot(leaves.get(0));
             mt.setBlock(leaves.get(0).getBlock());
@@ -279,7 +281,7 @@ public class MerkleGraphTree
             mt.setSubtree(leaves.get(0).getSubtree_node());
             return mt;
         }else{
-            for(int i=0;i<leaves.size();i+=2)
+            for(int i=0;i<leaves.size()-1;i+=2)
             {
                 GraphLeaf father=new GraphLeaf();
                 father.setLeft_son(leaves.get(i));
@@ -290,13 +292,18 @@ public class MerkleGraphTree
                 leaves.get(i).setFather(father);
                 leaves.get(i+1).setFather(father);
                 new_leaves.add(father);
+                count+=1;
+                System.out.println("Now is creating the MGT, this layer has "+count+" nodes");
             }
-            if (leaves.size()/2==1)
+            if (leaves.size()%2==1)
             {
                 new_leaves.add(leaves.get(leaves.size()-1));
+                count+=1;
+                System.out.println("Ok, we lost one, "+count+" nodes in total");
             }
+            MerkleGraphTree mt=create_Merkletree(new_leaves);
+            return mt;
         }
-        create_Merkletree(new_leaves);
-        return mt;
+
     }
 }

@@ -11,10 +11,11 @@ public class PropertySemanticTrie {
 
     //When the transactions coming, firstly create the property semantic trie
     //filter_order: 按照什么顺序过滤属性; amount: branchnode分成几类
-    public void create_PST(ArrayList<Transaction> txs, String[] filter_order, int amount){
+    public void create_PST(MerkleGraphTree mgt, ArrayList<Transaction> txs, String[] filter_order, int amount){
         //本案例中三个属性，timecost，reputation和type
-        //创建第一层extensionnode和它下一层的
+        //创建第一层extensionnode和它下一层的，第一层extension node需要连接merklegraphtree的根
         PSTExtensionNode ex1=new PSTExtensionNode();
+        ex1.setRoot_item(mgt);
         ex1.setProperty(filter_order[0]);
         ex1.setPre_item(null);//没有previous的extension_node就是第一个
         PSTBranchNode branch1=new PSTBranchNode();

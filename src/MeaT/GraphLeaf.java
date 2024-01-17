@@ -2,6 +2,7 @@ package MeaT;
 
 import blockchain.Block;
 import blockchain.Transaction;
+import functions.TxUtils;
 import graph.Edge;
 import graph.Node;
 
@@ -47,6 +48,29 @@ public class GraphLeaf
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         return digest.digest(input.getBytes(StandardCharsets.UTF_8));
     }
+
+    //将交易转化为leaf节点
+    public static GraphLeaf transactions_to_leaf(Transaction tx) throws NoSuchAlgorithmException {
+        GraphLeaf graphLeaf=new GraphLeaf();
+        TxUtils txUtils=new TxUtils();
+        graphLeaf.setBlock(tx.getBlock());
+        graphLeaf.setEdge(txUtils.txs_to_edges(tx));
+        graphLeaf.setHash_id(calculateSHA256(tx.getId().toString()));
+        graphLeaf.setSubtree_node(tx.getStart_node());
+        return graphLeaf;
+    }
+
+    //将edge转化为leaf节点
+    public static GraphLeaf edge_to_leaf(Edge edge) throws NoSuchAlgorithmException {
+        GraphLeaf graphLeaf=new GraphLeaf();
+        TxUtils txUtils=new TxUtils();
+        graphLeaf.setBlock(edge.getBlock());
+        graphLeaf.setEdge(edge);
+        graphLeaf.setHash_id(calculateSHA256(edge.getId().toString()));
+        graphLeaf.setSubtree_node(edge.getStart_node());
+        return graphLeaf;
+    }
+
 
     public static String bytesToHex(byte[] bytes) {
         StringBuilder hexString = new StringBuilder();
