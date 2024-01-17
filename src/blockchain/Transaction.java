@@ -11,6 +11,7 @@ public class Transaction {
     private Node start_node;
     private Node end_node;
     private String type;
+    private Block block;
     private PSTLeafNode upper_PSFLeaf;//对应到property semantic trie中的leafnode
 
     public Transaction(byte[] id, String timestamp, String time_cost, String reputation, Node start_node, Node end_node, String type) {
@@ -21,6 +22,14 @@ public class Transaction {
         this.start_node = start_node;
         this.end_node = end_node;
         this.type=type;
+    }
+
+    public Block getBlock() {
+        return block;
+    }
+
+    public void setBlock(Block block) {
+        this.block = block;
     }
 
     public void setId(byte[] id){

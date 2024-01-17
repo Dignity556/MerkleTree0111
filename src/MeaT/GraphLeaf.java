@@ -25,6 +25,7 @@ public class GraphLeaf
 //    }
 
     private Edge edge;
+    private Block block;
     private byte[] hash_id;
     private GraphLeaf father;
     private GraphLeaf left_son;
@@ -34,6 +35,7 @@ public class GraphLeaf
 
     public GraphLeaf(Edge edge) throws NoSuchAlgorithmException {
         this.edge=edge;
+        this.block=edge.getBlock();
         hash_id=calculateSHA256(edge.getId().toString());
     }
 
@@ -101,6 +103,14 @@ public class GraphLeaf
 
     public void setSubtree_node(Node subtree_node) {
         this.subtree_node = subtree_node;
+    }
+
+    public Block getBlock() {
+        return block;
+    }
+
+    public void setBlock(Block block) {
+        this.block = block;
     }
 }
 

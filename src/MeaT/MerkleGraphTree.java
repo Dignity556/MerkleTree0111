@@ -231,6 +231,7 @@ public class MerkleGraphTree
 //    }
     private byte[] hash_value;
     private GraphLeaf root;
+    private Block block;
     private Node subtree;//图树中能用到的，判断子树是哪个节点的交易组成的
 
 
@@ -258,6 +259,14 @@ public class MerkleGraphTree
         this.subtree = subtree;
     }
 
+    public Block getBlock() {
+        return block;
+    }
+
+    public void setBlock(Block block) {
+        this.block = block;
+    }
+
     public MerkleGraphTree create_Merkletree(ArrayList<GraphLeaf> leaves) throws NoSuchAlgorithmException {
         ArrayList<GraphLeaf> new_leaves=new ArrayList<>();
         MerkleGraphTree mt=new MerkleGraphTree();
@@ -265,6 +274,7 @@ public class MerkleGraphTree
         {
             leaves.get(0).setFather(null);
             mt.setRoot(leaves.get(0));
+            mt.setBlock(leaves.get(0).getBlock());
             mt.setHash_value(leaves.get(0).getHash_id());
             mt.setSubtree(leaves.get(0).getSubtree_node());
             return mt;
@@ -276,6 +286,7 @@ public class MerkleGraphTree
                 father.setRight_son(leaves.get(i+1));
                 father.setSubtree_node(leaves.get(i).getSubtree_node());
                 father.setHash_id(GraphLeaf.calculateSHA256(leaves.get(i).getHash_id().toString()+leaves.get(i+1).getHash_id().toString()));
+                father.setBlock(leaves.get(i).getBlock());
                 leaves.get(i).setFather(father);
                 leaves.get(i+1).setFather(father);
                 new_leaves.add(father);

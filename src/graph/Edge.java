@@ -1,6 +1,7 @@
 package graph;
 
 import MeaT.PSTLeafNode;
+import blockchain.Block;
 
 public class Edge {
     private Node start_node;
@@ -10,6 +11,7 @@ public class Edge {
     private String time_cost;
     private String type;
     private String reputation; //相当于权重
+    private Block block;
     private PSTLeafNode upper_PSFLeaf;//对应到property semantic trie中的leafnode
 
 
@@ -82,6 +84,14 @@ public class Edge {
 
     public PSTLeafNode getUpper_PSFLeaf() {
         return upper_PSFLeaf;
+    }
+
+    public Block getBlock() {
+        return block;
+    }
+
+    public void setBlock(Block block) {
+        this.block = block;
     }
 
     public void setUpper_PSFLeaf(PSTLeafNode upper_PSFLeaf) {
