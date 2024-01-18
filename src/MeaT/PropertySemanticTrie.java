@@ -4,6 +4,8 @@ import blockchain.Transaction;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Queue;
 
 public class PropertySemanticTrie {
 
@@ -15,7 +17,9 @@ public class PropertySemanticTrie {
         //本案例中三个属性，timecost，reputation和type
         //创建第一层extensionnode和它下一层的，第一层extension node需要连接merklegraphtree的根
         PSTExtensionNode ex1=new PSTExtensionNode();
+        //root与第一层的extension_node相关联
         ex1.setRoot_item(mgt);
+        mgt.getRoot().setPstExtensionNode(ex1);
         ex1.setProperty(filter_order[0]);
         ex1.setPre_item(null);//没有previous的extension_node就是第一个
         PSTBranchNode branch1=new PSTBranchNode();
@@ -75,4 +79,161 @@ public class PropertySemanticTrie {
             }
         }
     }
+
+    //按照属性查询
+    public ArrayList<Transaction> query_Property(HashMap<String,String> queries, MerkleGraphTree mgt){
+        ArrayList<Transaction> transactions=new ArrayList<>();
+        Queue<PSTExtensionNode> extension_queue=new LinkedList<>();
+        //第一层
+        PSTExtensionNode extensionNode1=mgt.getRoot().getPstExtensionNode();
+        PSTBranchNode branchNode1= extensionNode1.getNext_item();
+        HashMap<String,PSTBranchNodeItem> branchNodeItems=branchNode1.getItems();
+        //一层一层来，第一层是属性，第二层是timecost，第三层是reputation
+        //如果需要查询属性类型，就加入指定的extensionnode，否则就全加入
+        if(queries.containsKey("type"))
+        {
+            extension_queue.add(type_extension_filter(queries.get("type"), branchNodeItems));
+            transactions.addAll(type_leaf_filter(queries.get("type"), branchNodeItems));
+            queries.remove("type");
+        }else{
+            for (String key:branchNodeItems.keySet()){
+                if(branchNodeItems.get(key).getNext_extension()!=null)
+                {
+                    extension_queue.add(branchNodeItems.get(key).getNext_extension());
+                }else if(branchNodeItems.get(key).getNext_leaf()!=null)
+                {
+                    transactions.addAll(branchNodeItems.get(key).getNext_leaf().getTxs());
+                }
+            }
+        }
+        //第二层之后，用队列代替递归
+        if(queries.size()!=0)
+        {
+            transactions.addAll(iterate_query_pst(extension_queue,queries));
+        }
+        return transactions;
+    }
+
+    public ArrayList<Transaction> iterate_query_pst(Queue<PSTExtensionNode> extension_queue, HashMap<String,String> queries){
+        ArrayList<Transaction> txs=new ArrayList<>();
+        if(queries.containsKey("time_cost") && !queries.containsKey("reputation"))
+        {
+            while (extension_queue.size()!=0)
+            {
+                if(extension_queue.peek().getProperty().equals("time_cost"))
+                {
+                    PSTExtensionNode pre=extension_queue.peek();
+                    HashMap<String,PSTBranchNodeItem> items=pre.getNext_item().getItems();
+                    txs.addAll(value_leaf_filter("time_cost",queries.get("time_cost"),items));
+                    extension_queue.addAll(value_extension_filter("time_cost",queries.get("time_cost"),items));
+                    extension_queue.poll();
+                }else{
+                    PSTExtensionNode pre=extension_queue.peek();
+                    HashMap<String,PSTBranchNodeItem> items=pre.getNext_item().getItems();
+                    txs.addAll(value_leaf_filter("time_cost",queries.get("time_cost"),items));
+                    extension_queue.poll();
+                }
+            }
+        }else if(!queries.containsKey("time_cost") && queries.containsKey("reputation"))
+        {
+            for (PSTExtensionNode node:extension_queue)
+            {
+                PSTBranchNode pre=node.getNext_item();
+                for (String key:pre.getItems().keySet()){
+                    extension_queue.add(pre.getItems().get(key).getNext_extension());
+                }
+            }
+            while (extension_queue.size()!=0)
+            {
+                PSTExtensionNode pre=extension_queue.peek();
+                HashMap<String,PSTBranchNodeItem> items=pre.getNext_item().getItems();
+                txs.addAll(value_leaf_filter("time_cost",queries.get("time_cost"),items));
+                extension_queue.poll();
+            }
+        }else
+        {
+            while (extension_queue.size()!=0)
+            {
+                PSTExtensionNode pre=extension_queue.peek();
+                HashMap<String,PSTBranchNodeItem> items=pre.getNext_item().getItems();
+                txs.addAll(value_leaf_filter("time_cost",queries.get("time_cost"),items));
+                extension_queue.addAll(value_extension_filter("time_cost",queries.get("time_cost"),items));
+                extension_queue.poll();
+            }
+        }
+        return txs;
+    }
+
+
+    //确认属性在哪个item中
+    public PSTExtensionNode type_extension_filter(String type, HashMap<String,PSTBranchNodeItem> branchNodeItems){
+        PSTBranchNodeItem nodeitems=branchNodeItems.get(type);
+        PSTExtensionNode extensionNode=nodeitems.getNext_extension();
+        return extensionNode;
+    }
+
+    //确认属性在哪个item中
+    public ArrayList<Transaction> type_leaf_filter(String type, HashMap<String,PSTBranchNodeItem> branchNodeItems){
+        ArrayList<Transaction> txs=new ArrayList<>();
+        PSTBranchNodeItem nodeitems=branchNodeItems.get(type);
+        txs=nodeitems.getNext_leaf().getTxs();
+        return txs;
+    }
+
+    //返回所有item的再下一层extension_node
+    public LinkedList<PSTExtensionNode> value_extension_filter(String cost_or_repu, String property_value, HashMap<String,PSTBranchNodeItem> branchNodeItems)
+    {
+        //先比较值在哪些key中
+        LinkedList<PSTExtensionNode> nodes=new LinkedList<>();
+        ArrayList<String> keys=new ArrayList<>();
+        for (String key: branchNodeItems.keySet())
+        {
+            String[] min_max=key.split(",");
+            double min=Double.valueOf(min_max[0]);
+            double max=Double.valueOf(min_max[1]);
+            double value=Double.valueOf(property_value);
+            if(value>max || (value<=max && value>=min))
+            {
+                keys.add(key);
+            }
+        }
+        //根据对应的key值筛选extensionnode
+        for (int i=0; i<keys.size();i++)
+        {
+            if(branchNodeItems.get(keys.get(i)).getNext_extension()!=null)
+            {
+                nodes.add(branchNodeItems.get(keys.get(i)).getNext_extension());
+            }
+        }
+        return nodes;
+    }
+
+    //返回所有leaf的transactions
+    public ArrayList<Transaction> value_leaf_filter(String cost_or_repu, String property_value, HashMap<String,PSTBranchNodeItem> branchNodeItems)
+    {
+        //先比较值在哪些key中
+        ArrayList<Transaction> txs=new ArrayList<>();
+        ArrayList<String> keys=new ArrayList<>();
+        for (String key: branchNodeItems.keySet())
+        {
+            String[] min_max=key.split(",");
+            double min=Double.valueOf(min_max[0]);
+            double max=Double.valueOf(min_max[1]);
+            double value=Double.valueOf(property_value);
+            if(value>max || (value<=max && value>=min))
+            {
+                keys.add(key);
+            }
+        }
+        //根据对应的key值筛选extensionnode
+        for (int i=0; i<keys.size();i++)
+        {
+            if(branchNodeItems.get(keys.get(i)).getNext_leaf()!=null)
+            {
+                txs.addAll(branchNodeItems.get(keys.get(i)).getNext_leaf().getTxs());
+            }
+        }
+        return txs;
+    }
+
 }

@@ -32,6 +32,7 @@ public class GraphLeaf
     private GraphLeaf left_son;
     private GraphLeaf right_son;
     private Node subtree_node;
+    private PSTExtensionNode pstExtensionNode;
 
 
     public GraphLeaf(Edge edge) throws NoSuchAlgorithmException {
@@ -135,6 +136,14 @@ public class GraphLeaf
 
     public void setBlock(Block block) {
         this.block = block;
+    }
+
+    public PSTExtensionNode getPstExtensionNode() {
+        return pstExtensionNode;
+    }
+
+    public void setPstExtensionNode(PSTExtensionNode pstExtensionNode) {
+        this.pstExtensionNode = pstExtensionNode;
     }
 }
 

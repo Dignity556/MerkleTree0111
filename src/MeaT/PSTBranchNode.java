@@ -35,6 +35,14 @@ public class PSTBranchNode {
         this.prevous = prevous;
     }
 
+    public HashMap<String, PSTBranchNodeItem> getItems() {
+        return items;
+    }
+
+    public void setItems(HashMap<String, PSTBranchNodeItem> items) {
+        this.items = items;
+    }
+
     //按照数值范围划分
     public HashMap<String,PSTBranchNodeItem> category_by_timecost(ArrayList<Transaction> txs,int amount){
         HashMap<String,PSTBranchNodeItem> items=new HashMap<>();
