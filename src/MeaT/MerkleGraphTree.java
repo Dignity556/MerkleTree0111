@@ -2,6 +2,8 @@ package MeaT;
 
 import blockchain.Block;
 import blockchain.Transaction;
+import functions.TxUtils;
+import graph.Edge;
 import graph.Node;
 
 import java.security.MessageDigest;
@@ -270,7 +272,7 @@ public class MerkleGraphTree
     public static MerkleGraphTree create_Merkletree(ArrayList<GraphLeaf> leaves) throws NoSuchAlgorithmException {
         ArrayList<GraphLeaf> new_leaves=new ArrayList<>();
 
-        int count=0;//记录树的总个数
+        int count=0;//记录树中节点的总个数
         if(leaves.size()==1)
         {
             MerkleGraphTree mt=new MerkleGraphTree();
@@ -307,7 +309,33 @@ public class MerkleGraphTree
 
     }
 
-    public void query_MerkleTree(){
+    //查询指定的交易
+    public void query_MerkleTree(Transaction tx){
+        Block block=tx.getBlock();
+        MerkleGraphTree mgt=block.getRoot();
 
+    }
+
+    public Transaction containsTransaction(byte[] Hash, GraphLeaf root) {
+        // 递归终止条件：如果当前节点为叶子节点，并且哈希值与目标交易的哈希值相等，则返回 true
+        if (root.getLeft_son()==null && root.getHash_id().equals(Hash)) {
+            Edge edge=root.getEdge();
+            return edge.getTx();
+        }
+
+        // 如果当前节点为叶子节点但哈希值不匹配，或者当前节点为非叶子节点，则继续遍历子节点
+        if (root.getLeft_son()!=null) {
+            // 递归遍历左子节点
+            Transaction tx1=containsTransaction(Hash, root.getLeft_son());
+            return tx1;
+
+        }
+        // 递归遍历右子节点（如果存在）
+        if (root.getRight_son()!=null) {
+            Transaction tx2=containsTransaction(Hash, root.getRight_son());
+            return  tx2;
+        }
+        // 如果在当前节点及其子节点中都未找到目标交易，则返回 false
+        return null;
     }
 }
