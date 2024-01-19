@@ -26,6 +26,10 @@ public class Transaction {
         this.type=type;
     }
 
+    public Transaction(){
+
+    }
+
     public Block getBlock() {
         return block;
     }
