@@ -1,8 +1,12 @@
 package MeaT;
 
+import JDBC.JDBCUtils;
 import blockchain.Transaction;
 
 import java.lang.reflect.Array;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -96,6 +100,15 @@ public class PSTBranchNode {
             String key=String.valueOf((min+(mole-1)*(max-min))/(amount-1))+","+String.valueOf((min+mole*(max-min))/(amount-1));
             items.get(key).getPre_txs().add(ts);
         }
+        //检查是否有item中交易数量为0的，如果有则先删除再返回
+        HashMap<String,PSTBranchNodeItem> final_items=new HashMap<>();
+        for (String str:items.keySet())
+        {
+            if(items.get(str).getPre_txs().size()!=0)
+            {
+                final_items.put(str,items.get(str));
+            }
+        }
         return items;
 
     }
@@ -118,22 +131,53 @@ public class PSTBranchNode {
         return extension;
     }
 
-    public void leaf_or_branch(HashMap<String,PSTBranchNodeItem> items)//确认下一层是
+    public HashMap<String,PSTBranchNodeItem> leaf_or_branch(HashMap<String,PSTBranchNodeItem> items,PSTBranchNode branchNode) throws SQLException//确认下一层是
     {
+        HashMap<String,PSTBranchNodeItem> return_items=new HashMap<>();
         for (String key: items.keySet())
         {
-            if(items.get(key).getPre_txs().size()==1)
+            if(items.get(key).getPre_txs().size()==0)
+            {
+                System.out.println("A zero item is created");
+            }else if(items.get(key).getPre_txs().size()==1)
             {
                 PSTLeafNode leafnode=new PSTLeafNode();
                 leafnode.setTx(items.get(key).getPre_txs().get(0));
                 leafnode.setPreBranch(items.get(key));
+                leafnode.setId("prebranchitem_"+items.get(key).getId()+"_leafnode");
                 items.get(key).setNext_leaf(leafnode);
+                items.get(key).setId("branchitem_nextleaf_"+items.get(key).getNext_leaf());
+                return_items.put(key,items.get(key));
+                //写入branchnodeitem
+                Connection conn=new JDBCUtils().connect_database();
+                String sql = "insert into pstbranchnodeitem (id,branch_id,filter_key) value (?,?,?)";
+                PreparedStatement ps=conn.prepareStatement(sql);
+                ps.setString(1,items.get(key).getId());
+                ps.setString(2,branchNode.getBranch_id());
+                ps.setString(3,key);
+                ps.executeUpdate();
+                //写入leafnode
+                String sql2 = "insert into pstleafnode (id,branch_item_id) value (?,?)";
+                PreparedStatement ps2=conn.prepareStatement(sql2);
+                ps2.setString(1,leafnode.getId());
+                ps2.setString(2,leafnode.getPreBranch().getId());
+                ps2.executeUpdate();
             }else{
                 PSTExtensionNode extensionNode=new PSTExtensionNode();
                 extensionNode.setPre_item(items.get(key));
                 items.get(key).setNext_extension(extensionNode);
+                return_items.put(key,items.get(key));
+                //写入item
+                Connection conn=new JDBCUtils().connect_database();
+                String sql = "insert into pstbranchnodeitem (id,branch_id,filter_key) value (?,?,?)";
+                PreparedStatement ps=conn.prepareStatement(sql);
+                ps.setString(1,items.get(key).getId());
+                ps.setString(2,branchNode.getBranch_id());
+                ps.setString(3,key);
+                ps.executeUpdate();
             }
         }
+        return return_items;
     }
 
 }

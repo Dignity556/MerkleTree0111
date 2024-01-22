@@ -1,7 +1,11 @@
 package MeaT;
 
+import JDBC.JDBCUtils;
 import blockchain.Transaction;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -13,7 +17,7 @@ public class PropertySemanticTrie {
 
     //When the transactions coming, firstly create the property semantic trie
     //filter_order: 按照什么顺序过滤属性; amount: branchnode分成几类
-    public void create_PST(MerkleGraphTree mgt, ArrayList<Transaction> txs, String[] filter_order, int amount){
+    public void create_PST(MerkleGraphTree mgt, ArrayList<Transaction> txs, String[] filter_order, int amount) throws SQLException {
         //本案例中三个属性，timecost，reputation和type
         //创建第一层extensionnode和它下一层的，第一层extension node需要连接merklegraphtree的根
         PSTExtensionNode ex1=new PSTExtensionNode();
@@ -24,27 +28,47 @@ public class PropertySemanticTrie {
         ex1.setPre_item(null);//没有previous的extension_node就是第一个
         PSTBranchNode branch1=new PSTBranchNode();
         ex1.set_next_branch(branch1);
+        ex1.setId("root"+filter_order[0]+"_branch_"+branch1.getBranch_id());
+        //ex1写入
+        Connection conn=new JDBCUtils().connect_database();
+        String sql = "insert into pstextensionnode (property,pre_block_hash,next_branch,extension_id) value (?,?,?,?)";
+        PreparedStatement ps=conn.prepareStatement(sql);
+        ps.setString(1,ex1.getProperty());
+        ps.setString(2,ex1.getRoot_item().getBlock().getId());
+        ps.setString(3,ex1.getNext_item().getBranch_id());
+        ps.setString(4, ex1.getId());
+        ps.executeUpdate();
         branch1.setPrevous(ex1);
         //进入第一层branch_node,开始筛选
         HashMap<String,PSTBranchNodeItem> branchitems1=new HashMap<>();
         if(filter_order[0].equals("type"))
         {
             branchitems1 = branch1.category_by_type(txs);
+            System.out.println("First layer: type");
         }else if(filter_order[0].equals("time_cost"))
         {
             branchitems1 = branch1.category_by_timecost(txs,amount);
+            System.out.println("First layer: time");
         }else{
             branchitems1 = branch1.category_by_reputation(txs,amount);
+            System.out.println("First layer: repu");
         }
-        branch1.leaf_or_branch(branchitems1);
+        //branchnode写入
+        String sql2 = "insert into pstbranchnode (branch_node_id,property,pre_extension) value (?,?,?)";
+        PreparedStatement ps2=conn.prepareStatement(sql2);
+        ps2.setString(1,branch1.getBranch_id());
+        ps2.setString(2,branch1.getPrevous().getProperty());
+        ps2.setString(3,branch1.getPrevous().getId());
+        ps2.executeUpdate();
+        branch1.leaf_or_branch(branchitems1,branch1);
         //开始递归创建
-        iterate_filter(branchitems1, 1, filter_order, amount);
+        iterate_filter(branchitems1, 1, filter_order, amount,branch1);
     }
 
     //递归创建时，需要带着每层筛选的属性集types和目前筛选到哪层的pre_type参数去递归
-    public void iterate_filter(HashMap<String,PSTBranchNodeItem> branchitems, int pre_type, String[] types, int amount){
+    public void iterate_filter(HashMap<String,PSTBranchNodeItem> branchitems, int pre_type, String[] types, int amount, PSTBranchNode branchNode) throws SQLException {
         for(String key: branchitems.keySet())
-        {
+        {//判断是否达到叶子节点 是叶子节点就变成叶子节点
             if(branchitems.get(key).getNext_leaf()!=null || pre_type==3)
             {
                 branchitems.get(key).setNext_extension(null);
@@ -53,29 +77,69 @@ public class PropertySemanticTrie {
                     leafNode.addTx(tx);
                 }
                 branchitems.get(key).setNext_leaf(leafNode);
+                leafNode.setPreBranch(branchitems.get(key));
+                leafNode.setId("prebranch"+leafNode.getPreBranch().getId()+"leafnode");
+//              //item更新
+                Connection conn=new JDBCUtils().connect_database();
+//                String sql = "update psfbranchnodeitem set balance = 1500 where id = 3\"";
+//                PreparedStatement ps=conn.prepareStatement(sql);
+//                ps.setString(1,branchitems.get(key).getId());
+//                ps.setString(2,branchNode.getBranch_id());
+//                ps.setString(3,key);
+//                ps.executeUpdate();
+                //leaf写入
+                String sql2 = "insert into pstleafnode (id,branch_item_id) value (?,?)";
+                PreparedStatement ps2=conn.prepareStatement(sql2);
+                ps2.setString(1,leafNode.getId());
+                ps2.setString(2,leafNode.getPreBranch().getId());
+                ps2.executeUpdate();
                 System.out.println("Leaf");
-                continue;
+
             }else
             {
                 PSTExtensionNode extensionNode=branchitems.get(key).getNext_extension();
-                extensionNode.setProperty(types[pre_type]);
-                extensionNode.setPre_item(branchitems.get(key));//没有previous的extension_node就是第一个
-                PSTBranchNode branch1=new PSTBranchNode();
-                extensionNode.set_next_branch(branch1);
-                branch1.setPrevous(extensionNode);
-                HashMap<String,PSTBranchNodeItem> branchitems1=new HashMap<>();
-                if(types[pre_type].equals("type"))
+                if(extensionNode!=null)
                 {
-                    branchitems1 = branch1.category_by_type(branchitems.get(key).getPre_txs());
-                }else if(types[pre_type].equals("time_cost"))
-                {
-                    branchitems1 = branch1.category_by_timecost(branchitems.get(key).getPre_txs(),amount);
-                }else{
-                    branchitems1 = branch1.category_by_reputation(branchitems.get(key).getPre_txs(),amount);
+                    extensionNode.setProperty(types[pre_type]);
+                    extensionNode.setPre_item(branchitems.get(key));//没有previous的extension_node就是第一个
+                    PSTBranchNode branch1=new PSTBranchNode();
+                    extensionNode.set_next_branch(branch1);
+                    //写入leafnode
+                    extensionNode.setId("preitem_"+branchitems.get(key).getId()+"_nextbranch_"+branch1.getBranch_id());
+                    //ex1写入
+                    Connection conn=new JDBCUtils().connect_database();
+                    String sql2 = "insert into pstextensionnode (property,pre_item,next_branch,extension_id) value (?,?,?,?)";
+                    PreparedStatement ps2=conn.prepareStatement(sql2);
+                    ps2.setString(1,extensionNode.getProperty());
+                    ps2.setString(2,extensionNode.getPre_item().getId());
+                    ps2.setString(3,extensionNode.getNext_item().getBranch_id());
+                    ps2.setString(4, extensionNode.getId());
+                    ps2.executeUpdate();
+                    branch1.setPrevous(extensionNode);
+                    HashMap<String,PSTBranchNodeItem> branchitems1=new HashMap<>();
+                    if(types[pre_type].equals("type"))
+                    {
+                        branchitems1 = branch1.category_by_type(branchitems.get(key).getPre_txs());
+                        System.out.println("This layer: type");
+                    }else if(types[pre_type].equals("time_cost"))
+                    {
+                        branchitems1 = branch1.category_by_timecost(branchitems.get(key).getPre_txs(),amount);
+                        System.out.println("This layer: time");
+                    }else{
+                        branchitems1 = branch1.category_by_reputation(branchitems.get(key).getPre_txs(),amount);
+                        System.out.println("This layer: repu");
+                    }
+                    //branchnode写入
+                    String sql3 = "insert into pstbranchnode (branch_node_id,property,pre_extension) value (?,?,?)";
+                    PreparedStatement ps3=conn.prepareStatement(sql3);
+                    ps3.setString(1,branch1.getBranch_id());
+                    ps3.setString(2,branch1.getPrevous().getProperty());
+                    ps3.setString(3,branch1.getPrevous().getId());
+                    ps3.executeUpdate();
+                    HashMap<String,PSTBranchNodeItem> new_branch_items=branch1.leaf_or_branch(branchitems1,branch1);
+                    System.out.println(branchitems1.get(key));
+                    iterate_filter(new_branch_items,pre_type+1,types,amount,branch1);
                 }
-                branch1.leaf_or_branch(branchitems1);
-                System.out.println(branchitems.get(key));
-                iterate_filter(branchitems1,pre_type+1,types,amount);
             }
         }
     }

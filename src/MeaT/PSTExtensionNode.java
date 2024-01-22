@@ -5,6 +5,7 @@ public class PSTExtensionNode {
     private MerkleGraphTree root_item;
     private String property;
     private PSTBranchNode next_item;
+    private String id;
 
     public PSTBranchNodeItem getPre_item() {
         return pre_item;
@@ -28,6 +29,14 @@ public class PSTExtensionNode {
 
     public void setNext_item(PSTBranchNode next_item) {
         this.next_item = next_item;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public void set_next_branch(PSTBranchNode branchNode){

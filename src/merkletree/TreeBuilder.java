@@ -50,11 +50,11 @@ public class TreeBuilder
         for (int i=0;i<5;i++)
         {
             String blockid=String.valueOf(block_id);
-            Block b=new Block(blockid.getBytes(StandardCharsets.UTF_8));
+            Block b=new Block(blockid);
             for(int j=0;j<10;j++)
             {
                 String tx_id_string=String.valueOf(j);
-                byte[] tx_id=tx_id_string.getBytes(StandardCharsets.UTF_8);
+                String tx_id=tx_id_string;
                 String tx_time_cost=String.valueOf(ran.nextDouble()*15);
                 String tx_repu=String.valueOf(ran.nextDouble());
                 int firstNumber = ran.nextInt(15); // 生成0到3之间的随机数

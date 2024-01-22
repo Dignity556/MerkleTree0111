@@ -1,5 +1,6 @@
 package MeaT;
 
+import JDBC.JDBCUtils;
 import blockchain.Block;
 import blockchain.Transaction;
 import functions.TxUtils;
@@ -8,6 +9,9 @@ import graph.Node;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,14 +60,47 @@ public class MerkleGraphTree
         this.block = block;
     }
 
-    public static MerkleGraphTree create_Merkletree(ArrayList<GraphLeaf> leaves) throws NoSuchAlgorithmException {
+    public static MerkleGraphTree create_Merkletree(ArrayList<GraphLeaf> leaves) throws NoSuchAlgorithmException, SQLException {
         ArrayList<GraphLeaf> new_leaves=new ArrayList<>();
-
         int count=0;//记录树中节点的总个数
         if(leaves.size()==1)
         {
             MerkleGraphTree mt=new MerkleGraphTree();
             leaves.get(0).setFather(null);
+            leaves.get(0).setId("root"+leaves.get(0).getBlock().getId()+"_"+leaves.get(0).getSubtree_node().getNode_id());
+            Connection conn=new JDBCUtils().connect_database();
+            String sql = "insert into merklegraphtree (hash_value,left_child,right_child,id,is_lower_root) value (?,?,?,?,?)";
+            PreparedStatement ps=conn.prepareStatement(sql);
+            ps.setString(1,leaves.get(0).getHash_id().toString());
+            if(leaves.get(0).getLeft_son()!=null)
+            {
+                ps.setString(2,leaves.get(0).getLeft_son().getId());
+            }else{
+                ps.setString(2,"null");
+            }
+            if(leaves.get(0).getRight_son()!=null)
+            {
+                ps.setString(3,leaves.get(0).getRight_son().getId());
+            }else{
+                ps.setString(3,"null");
+            }
+            ps.setString(4,leaves.get(0).getId());
+            ps.setInt(5,1);
+            ps.executeUpdate();
+            try {
+                if (null != ps) {
+                    ps.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            try {
+                if (null != conn) {
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
             mt.setRoot(leaves.get(0));
             mt.setBlock(leaves.get(0).getBlock());
             mt.setHash_value(leaves.get(0).getHash_id());
@@ -78,15 +115,67 @@ public class MerkleGraphTree
                 father.setSubtree_node(leaves.get(i).getSubtree_node());
                 father.setHash_id(GraphLeaf.calculateSHA256(leaves.get(i).getHash_id().toString()+leaves.get(i+1).getHash_id().toString()));
                 father.setBlock(leaves.get(i).getBlock());
+                father.setId("father"+leaves.get(i).getId()+leaves.get(i+1).getId());
                 leaves.get(i).setFather(father);
                 leaves.get(i+1).setFather(father);
                 new_leaves.add(father);
                 count+=1;
+                Connection conn=new JDBCUtils().connect_database();
+                String sql = "insert into merklegraphtree (hash_value,left_child,right_child,id) value (?,?,?,?)";
+                PreparedStatement ps=conn.prepareStatement(sql);
+                ps.setString(1,leaves.get(i).getHash_id().toString());
+                if(leaves.get(i).getLeft_son()!=null)
+                {
+                    ps.setString(2,leaves.get(i).getLeft_son().getId());
+                }else{
+                    ps.setString(2,"null");
+                }
+                if(leaves.get(i).getRight_son()!=null)
+                {
+                    ps.setString(3,leaves.get(i).getRight_son().getId());
+                }else{
+                    ps.setString(3,"null");
+                }
+                ps.setString(4,leaves.get(i).getId());
+                ps.executeUpdate();
+                try {
+                    if (null != ps) {
+                        ps.close();
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+                PreparedStatement ps2=conn.prepareStatement(sql);
+                ps2.setString(1,leaves.get(i).getHash_id().toString());
+                if(leaves.get(i).getLeft_son()!=null)
+                {
+                    ps2.setString(2,leaves.get(i).getLeft_son().getId());
+                }else{
+                    ps2.setString(2,"null");
+                }
+                if(leaves.get(i).getRight_son()!=null)
+                {
+                    ps2.setString(3,leaves.get(i).getRight_son().getId());
+                }else{
+                    ps2.setString(3,"null");
+                }
+                ps2.setString(4,leaves.get(i).getId());
+                ps2.executeUpdate();
+                try {
+                    if (null != ps2) {
+                        ps2.close();
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
                 System.out.println("Now is creating the MGT, this layer has "+count+" nodes");
             }
             if (leaves.size()%2==1)
             {
-                new_leaves.add(leaves.get(leaves.size()-1));
+                GraphLeaf new_leaf=leaves.get(leaves.size()-1);
+                String label=new_leaf.getSubtree_node().getNode_id();
+                new_leaf.setId(label+"_"+new_leaf.getBlock().getId()+"_"+count);
+                new_leaves.add(new_leaf);
                 count+=1;
                 System.out.println("Ok, we lost one, "+count+" nodes in total");
             }
@@ -95,6 +184,137 @@ public class MerkleGraphTree
         }
 
     }
+
+    //创建上层mgt
+    public static MerkleGraphTree create_upper_Merkletree(ArrayList<GraphLeaf> leaves) throws NoSuchAlgorithmException, SQLException {
+        ArrayList<GraphLeaf> new_leaves=new ArrayList<>();
+        for (GraphLeaf leaf:leaves)
+        {
+            System.out.println(leaf.getId());
+        }
+        int count=0;//记录树中节点的总个数
+        if(leaves.size()==1)
+        {
+            MerkleGraphTree mt=new MerkleGraphTree();
+            leaves.get(0).setFather(null);
+            leaves.get(0).setId("upper_root"+leaves.get(0).getBlock().getId()+"_"+leaves.get(0).getSubtree_node().getNode_id());
+            Connection conn=new JDBCUtils().connect_database();
+            String sql = "insert into merklegraphtree (hash_value,left_child,right_child,id,is_upper_root) value (?,?,?,?,?)";
+            PreparedStatement ps=conn.prepareStatement(sql);
+            ps.setString(1,leaves.get(0).getHash_id().toString());
+            if(leaves.get(0).getLeft_son()!=null)
+            {
+                ps.setString(2,leaves.get(0).getLeft_son().getId());
+            }else{
+                ps.setString(2,"null");
+            }
+            if(leaves.get(0).getRight_son()!=null)
+            {
+                ps.setString(3,leaves.get(0).getRight_son().getId());
+            }else{
+                ps.setString(3,"null");
+            }
+            ps.setString(4,leaves.get(0).getId());
+            ps.setInt(5,1);
+            ps.executeUpdate();
+            try {
+                if (null != ps) {
+                    ps.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            try {
+                if (null != conn) {
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            mt.setRoot(leaves.get(0));
+            mt.setBlock(leaves.get(0).getBlock());
+            mt.setHash_value(leaves.get(0).getHash_id());
+            mt.setSubtree(leaves.get(0).getSubtree_node());
+            return mt;
+        }else{
+            for(int i=0;i<leaves.size()-1;i+=2)
+            {
+                GraphLeaf father=new GraphLeaf();
+                father.setLeft_son(leaves.get(i));
+                father.setRight_son(leaves.get(i+1));
+                father.setSubtree_node(leaves.get(i).getSubtree_node());
+                father.setHash_id(GraphLeaf.calculateSHA256(leaves.get(i).getHash_id().toString()+leaves.get(i+1).getHash_id().toString()));
+                father.setBlock(leaves.get(i).getBlock());
+                father.setId("father"+leaves.get(i).getId()+leaves.get(i+1).getId());
+                leaves.get(i).setFather(father);
+                leaves.get(i+1).setFather(father);
+                new_leaves.add(father);
+                count+=1;
+                Connection conn=new JDBCUtils().connect_database();
+                String sql = "insert into merklegraphtree (hash_value,left_child,right_child,id) value (?,?,?,?)";
+                PreparedStatement ps=conn.prepareStatement(sql);
+                ps.setString(1,leaves.get(i).getHash_id().toString());
+                if(leaves.get(i).getLeft_son()!=null)
+                {
+                    ps.setString(2,leaves.get(i).getLeft_son().getId());
+                }else{
+                    ps.setString(2,"null");
+                }
+                if(leaves.get(i).getRight_son()!=null)
+                {
+                    ps.setString(3,leaves.get(i).getRight_son().getId());
+                }else{
+                    ps.setString(3,"null");
+                }
+                ps.setString(4,leaves.get(i).getId());
+                ps.executeUpdate();
+                try {
+                    if (null != ps) {
+                        ps.close();
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+                PreparedStatement ps2=conn.prepareStatement(sql);
+                ps2.setString(1,leaves.get(i).getHash_id().toString());
+                if(leaves.get(i).getLeft_son()!=null)
+                {
+                    ps2.setString(2,leaves.get(i).getLeft_son().getId());
+                }else{
+                    ps2.setString(2,"null");
+                }
+                if(leaves.get(i).getRight_son()!=null)
+                {
+                    ps2.setString(3,leaves.get(i).getRight_son().getId());
+                }else{
+                    ps2.setString(3,"null");
+                }
+                ps2.setString(4,leaves.get(i).getId());
+                ps2.executeUpdate();
+                try {
+                    if (null != ps2) {
+                        ps2.close();
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+                System.out.println("Now is creating the MGT, this layer has "+count+" nodes");
+            }
+            if (leaves.size()%2==1)
+            {
+                GraphLeaf new_leaf=leaves.get(leaves.size()-1);
+                String label=new_leaf.getSubtree_node().getNode_id();
+                new_leaf.setId(label+"_"+new_leaf.getBlock().getId()+"_"+count);
+                new_leaves.add(new_leaf);
+                count+=1;
+                System.out.println("Ok, we lost one, "+count+" nodes in total");
+            }
+            MerkleGraphTree mt=create_upper_Merkletree(new_leaves);
+            return mt;
+        }
+
+    }
+
 
     //查询指定的交易
     public void query_MerkleTree(Transaction tx){

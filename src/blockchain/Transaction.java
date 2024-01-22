@@ -5,7 +5,7 @@ import graph.Edge;
 import graph.Node;
 
 public class Transaction {
-    private byte[] id;
+    private String id;
     private String timestamp;
     private String time_cost;
     private String reputation; //相当于权重
@@ -16,7 +16,7 @@ public class Transaction {
     private Edge edge;
     private PSTLeafNode upper_PSFLeaf;//对应到property semantic trie中的leafnode
 
-    public Transaction(byte[] id, String timestamp, String time_cost, String reputation, Node start_node, Node end_node, String type) {
+    public Transaction(String id, String timestamp, String time_cost, String reputation, Node start_node, Node end_node, String type) {
         this.id = id;
         this.timestamp = timestamp;
         this.time_cost = time_cost;
@@ -38,11 +38,11 @@ public class Transaction {
         this.block = block;
     }
 
-    public void setId(byte[] id){
+    public void setId(String id){
         this.id=id;
     }
 
-    public byte[] getId() {
+    public String getId() {
         return id;
     }
 

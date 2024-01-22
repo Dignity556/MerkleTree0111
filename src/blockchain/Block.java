@@ -8,7 +8,7 @@ import java.util.ArrayList;
 public class Block {
     private ArrayList<Transaction> txs=new ArrayList<>();
     private byte[] hashroot;
-    private byte[] id;
+    private String id;
     private MerkleGraphTree root;
 
 
@@ -20,7 +20,7 @@ public class Block {
         this.root = root;
     }
 
-    public Block(byte[] id){
+    public Block(String id){
         this.id=id;
     }
 
@@ -32,11 +32,11 @@ public class Block {
         this.txs = txs;
     }
 
-    public byte[] getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(byte[] id) {
+    public void setId(String id) {
         this.id = id;
     }
 

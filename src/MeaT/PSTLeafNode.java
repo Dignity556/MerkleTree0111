@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class PSTLeafNode {
+    private String id;
     private Transaction tx;
     private ArrayList<Edge> edges;
     private PSTBranchNodeItem preBranch;
@@ -56,5 +57,13 @@ public class PSTLeafNode {
 
     public void setTxs(ArrayList<Transaction> txs) {
         this.txs = txs;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }

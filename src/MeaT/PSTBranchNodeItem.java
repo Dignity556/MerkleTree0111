@@ -9,6 +9,7 @@ public class PSTBranchNodeItem {
     private ArrayList<Transaction> pre_txs;
     private PSTLeafNode next_leaf;
     private PSTExtensionNode next_extension;
+    private String id;
 
     public PSTBranchNodeItem(){
         this.pre_txs=new ArrayList<>();
@@ -44,5 +45,13 @@ public class PSTBranchNodeItem {
 
     public void setNext_extension(PSTExtensionNode next_extension) {
         this.next_extension = next_extension;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }

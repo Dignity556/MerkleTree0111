@@ -1,9 +1,13 @@
 package MeaT;
 
+import JDBC.JDBCUtils;
 import blockchain.Block;
 import graph.Node;
 
 import java.security.NoSuchAlgorithmException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -38,19 +42,39 @@ public class GraphNodeLink {
     }
 
 
-    public MerkleGraphTree create_upper_MGT(GraphNodeLink gnl, Block block) throws NoSuchAlgorithmException {
+    public MerkleGraphTree create_upper_MGT(GraphNodeLink gnl, Block block) throws NoSuchAlgorithmException, SQLException {
         //直接根据blockid，从每个item中找到merklegraphtree的root
         ArrayList<GraphLeaf> leafNodes=new ArrayList<>();
         for(Node node: items.keySet()){
-            if(gnl.getItems().get(node).getMgts().containsKey(block))
+            if(gnl.getItems().get(node).getMgts().containsKey(block.getId()))
             {
-                GraphLeaf sub_root=gnl.getItems().get(node).getMgts().get(block).getRoot();
+                GraphLeaf sub_root=gnl.getItems().get(node).getMgts().get(block.getId()).getRoot();
                 leafNodes.add(sub_root);
             }
         }
-        MerkleGraphTree block_root=MerkleGraphTree.create_Merkletree(leafNodes);
+        MerkleGraphTree block_root=MerkleGraphTree.create_upper_Merkletree(leafNodes);
         block.setHashroot(block_root.getHash_value());
         block.setRoot(block_root);
+        Connection conn=new JDBCUtils().connect_database();
+        String sql = "update block set hash_value = (?) where block_id = (?)";
+        PreparedStatement ps=conn.prepareStatement(sql);
+        ps.setString(1,block.getHashroot().toString());
+        ps.setString(2,block.getId());
+        ps.executeUpdate();
+        try {
+            if (null != ps) {
+                ps.close();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        try {
+            if (null != conn) {
+                conn.close();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return block_root;
     }
 

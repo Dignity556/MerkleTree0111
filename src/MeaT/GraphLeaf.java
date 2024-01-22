@@ -32,6 +32,7 @@ public class GraphLeaf
     private GraphLeaf left_son;
     private GraphLeaf right_son;
     private Node subtree_node;
+    private String id;
     private PSTExtensionNode pstExtensionNode;
 
 
@@ -39,6 +40,14 @@ public class GraphLeaf
         this.edge=edge;
         this.block=edge.getBlock();
         hash_id=calculateSHA256(edge.getId().toString());
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public GraphLeaf(){

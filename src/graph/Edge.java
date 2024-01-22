@@ -11,7 +11,7 @@ import java.util.HashMap;
 public class Edge {
     private Node start_node;
     private Node end_node;
-    private byte[] id;
+    private String id;
     private String timestamp;
     private String time_cost;
     private String type;
@@ -23,7 +23,7 @@ public class Edge {
 
 
 
-    public Edge(Node start_node, Node end_node, byte[] id, String timestamp, String time_cost, String reputation,String type) {
+    public Edge(Node start_node, Node end_node,String id, String timestamp, String time_cost, String reputation,String type) {
         this.start_node = start_node;
         this.end_node = end_node;
         this.id = id;
@@ -50,11 +50,11 @@ public class Edge {
         this.end_node = end_node;
     }
 
-    public byte[] getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(byte[] id) {
+    public void setId(String id) {
         this.id = id;
     }
 
