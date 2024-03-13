@@ -24,6 +24,8 @@ public class Block {
         this.id=id;
     }
 
+    public Block(){}
+
     public ArrayList<Transaction> getTxs() {
         return txs;
     }

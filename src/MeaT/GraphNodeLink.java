@@ -27,6 +27,19 @@ public class GraphNodeLink {
         this.items = items;
     }
 
+    public GraphNodeLinkItem query_by_string(String node_id)
+    {
+        for(Node node: getItems().keySet())
+        {
+            if (node.getNode_id().equals(node_id))
+            {
+                return items.get(node);
+            }
+        }
+        return null;
+    }
+
+
     public void addLink(MerkleGraphTree mgt){
         //Get the node type to locate its location in the GraphNodeLinkItems
         Node start_node=mgt.getSubtree();
@@ -77,5 +90,22 @@ public class GraphNodeLink {
         }
         return block_root;
     }
+
+    public MerkleGraphTree java_create_upper_MGT(GraphNodeLink gnl, Block block) throws NoSuchAlgorithmException, SQLException {
+        //直接根据blockid，从每个item中找到merklegraphtree的root
+        ArrayList<GraphLeaf> leafNodes=new ArrayList<>();
+        for(Node node: items.keySet()){
+            if(gnl.getItems().get(node).getMgts().containsKey(block.getId()))
+            {
+                GraphLeaf sub_root=gnl.getItems().get(node).getMgts().get(block.getId()).getRoot();
+                leafNodes.add(sub_root);
+            }
+        }
+        MerkleGraphTree block_root=MerkleGraphTree.create_upper_Merkletree(leafNodes);
+        block.setHashroot(block_root.getHash_value());
+        block.setRoot(block_root);
+        return block_root;
+    }
+
 
 }

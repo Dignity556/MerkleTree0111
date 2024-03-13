@@ -17,7 +17,28 @@ public class JDBCUtils {
             Class.forName("com.mysql.jdbc.Driver");
             // 建立连接
             conn = DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/skyline_query", "root", "123456");
+                    "jdbc:mysql://localhost:3306/skyline_query_100000", "root", "123456");
+            //st = conn.createStatement();
+//            String sql = "insert into transaction (id) value ('1')";
+//            st.execute(sql);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return conn;
+    }
+
+    public Connection connect_mini_database()
+    {
+        Connection conn;
+        conn = null;
+        Statement st = null;
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            // 建立连接
+            conn = DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/skyline_query_test", "root", "123456");
             //st = conn.createStatement();
 //            String sql = "insert into transaction (id) value ('1')";
 //            st.execute(sql);

@@ -146,7 +146,7 @@ public class PSTBranchNode {
                 leafnode.setPreBranch(items.get(key));
                 leafnode.setId("prebranchitem_"+items.get(key).getId()+"_leafnode");
                 items.get(key).setNext_leaf(leafnode);
-                items.get(key).setId("branchitem_nextleaf_"+items.get(key).getNext_leaf());
+                items.get(key).setId("branchitem_nextleaf_"+items.get(key).getNext_leaf().getId());
                 return_items.put(key,items.get(key));
                 //写入branchnodeitem
                 Connection conn=new JDBCUtils().connect_database();
@@ -165,8 +165,10 @@ public class PSTBranchNode {
             }else{
                 PSTExtensionNode extensionNode=new PSTExtensionNode();
                 extensionNode.setPre_item(items.get(key));
+                extensionNode.setId("prebranchitem:"+items.get(key).toString());
                 items.get(key).setNext_extension(extensionNode);
                 return_items.put(key,items.get(key));
+                items.get(key).setId("branchitem_nextextension_"+items.get(key).getNext_extension().getId());
                 //写入item
                 Connection conn=new JDBCUtils().connect_database();
                 String sql = "insert into pstbranchnodeitem (id,branch_id,filter_key) value (?,?,?)";
@@ -175,6 +177,35 @@ public class PSTBranchNode {
                 ps.setString(2,branchNode.getBranch_id());
                 ps.setString(3,key);
                 ps.executeUpdate();
+            }
+        }
+        return return_items;
+    }
+
+    public HashMap<String,PSTBranchNodeItem> java_leaf_or_branch(HashMap<String,PSTBranchNodeItem> items,PSTBranchNode branchNode) throws SQLException//确认下一层是
+    {
+        HashMap<String,PSTBranchNodeItem> return_items=new HashMap<>();
+        for (String key: items.keySet())
+        {
+            if(items.get(key).getPre_txs().size()==0)
+            {
+                System.out.println("A zero item is created");
+            }else if(items.get(key).getPre_txs().size()==1)
+            {
+                PSTLeafNode leafnode=new PSTLeafNode();
+                leafnode.setTx(items.get(key).getPre_txs().get(0));
+                leafnode.setPreBranch(items.get(key));
+                leafnode.setId("prebranchitem_"+items.get(key).getId()+"_leafnode");
+                items.get(key).setNext_leaf(leafnode);
+                items.get(key).setId("branchitem_nextleaf_"+items.get(key).getNext_leaf().getId());
+                return_items.put(key,items.get(key));
+            }else{
+                PSTExtensionNode extensionNode=new PSTExtensionNode();
+                extensionNode.setPre_item(items.get(key));
+                extensionNode.setId("prebranchitem:"+items.get(key).toString());
+                items.get(key).setNext_extension(extensionNode);
+                return_items.put(key,items.get(key));
+                items.get(key).setId("branchitem_nextextension_"+items.get(key).getNext_extension().getId());
             }
         }
         return return_items;

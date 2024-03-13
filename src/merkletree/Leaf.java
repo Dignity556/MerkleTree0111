@@ -1,7 +1,10 @@
 package merkletree;
 
+import MeaT.GraphLeaf;
 import blockchain.Block;
 import blockchain.Transaction;
+import functions.TxUtils;
+import graph.Edge;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -27,7 +30,8 @@ public class Leaf
     private Leaf father;
     private Leaf left_son;
     private Leaf right_son;
-
+    private Block block;
+    private String id;
 
     public Leaf(Transaction transaction) throws NoSuchAlgorithmException {
         this.transaction=transaction;
@@ -36,6 +40,14 @@ public class Leaf
 
     public Leaf(){
 
+    }
+
+    public Block getBlock() {
+        return block;
+    }
+
+    public void setBlock(Block block) {
+        this.block = block;
     }
 
     public static byte[] calculateSHA256(String input) throws NoSuchAlgorithmException {
@@ -50,6 +62,14 @@ public class Leaf
             hexString.append(hex);
         }
         return hexString.toString();
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public Leaf getFather() {
@@ -90,6 +110,14 @@ public class Leaf
 
     public void setHash_id(byte[] hash_id) {
         this.hash_id = hash_id;
+    }
+
+    public static Leaf tx_to_leaf(Transaction tx) throws NoSuchAlgorithmException {
+        Leaf graphLeaf=new Leaf();
+        graphLeaf.setBlock(tx.getBlock());
+        graphLeaf.setHash_id(calculateSHA256(tx.getId()));
+        graphLeaf.setTransaction(tx);
+        return graphLeaf;
     }
 }
 
